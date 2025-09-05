@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaraokeHub - Book Your Perfect Karaoke Experience</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --secondary: #EC4899;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .app {
+            min-height: 100vh;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: bold;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Admin Sidebar */
+        .admin-layout {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem 0;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-item.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-left-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar-icon {
+            font-size: 1.25rem;
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--gradient);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: #6B7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-change {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .stat-change.negative {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            text-align: center;
+            max-width: 1280px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideInFromTop 1s ease;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            animation: slideInFromBottom 1s ease;
+        }
+
+        /* Room Grid */
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .room-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .room-header {
+            background: var(--gradient);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-header::before {
+            content: '♪';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            right: -20px;
+            top: -20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .room-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .room-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .room-number {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+        }
+
+        .room-body {
+            padding: 1.5rem;
+        }
+
+        .room-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6B7280;
+        }
+
+        .room-price {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .room-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-available {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-occupied {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-closed {
+            background: #E5E7EB;
+            color: #374151;
+        }
+
+        /* Tables */
+        .admin-table-container {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            background: var(--gradient);
+            padding: 1.5rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #F9FAFB;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #6B7280;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #F9FAFB;
+        }
+
+        .table-actions-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #6B7280;
+            transition: all 0.3s ease;
+            font-size: 1.25rem;
+        }
+
+        .action-btn:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .action-btn.edit:hover {
+            color: var(--primary);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger);
+        }
+
+        .action-btn.view:hover {
+            color: var(--success);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            background: var(--gradient);
+            padding: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-header h2 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .time-slot {
+            padding: 0.75rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .time-slot:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .time-slot.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .time-slot.disabled {
+            background: #F3F4F6;
+            color: #9CA3AF;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #D97706;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-header {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+            text-decoration: none;
+            color: var(--dark);
+        }
+
+        .quick-action:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .quick-action-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Login/Register Forms */
+        .auth-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            max-width: 450px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        .auth-header {
+            background: var(--gradient);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .auth-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-body {
+            padding: 2rem;
+        }
+
+        .auth-footer {
+            padding: 1rem 2rem;
+            background: #F9FAFB;
+            text-align: center;
+        }
+
+        .auth-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Bookings Table */
+        .bookings-table {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Promotion Cards */
+        .promotion-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .promotion-card:hover {
+            transform: translateX(5px);
+        }
+
+        .promotion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .promotion-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .promotion-code-display {
+            background: var(--gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .promotion-details {
+            display: flex;
+            gap: 2rem;
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+
+        .promotion-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInFromBottom {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 300px;
+            animation: slideInFromRight 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .room-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-filters {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .modal {
+                width: 95%;
+            }
+
+            .admin-sidebar {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #F3F4F6;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // Main App Component
+        const App = () => {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [user, setUser] = useState(null);
+            const [showBookingModal, setShowBookingModal] = useState(false);
+            const [selectedRoom, setSelectedRoom] = useState(null);
+            const [bookings, setBookings] = useState([
+                { 
+                    id: 1, 
+                    bookingId: 'BK20240101', 
+                    room: { name: 'VIP Room Gold', number: 'V201', type: 'VIP', price: 2500 },
+                    customerName: 'John Doe',
+                    customerEmail: 'john@example.com',
+                    customerPhone: '0812345678',
+                    date: '2024-01-15',
+                    timeSlot: '18:00-20:00',
+                    numberOfPeople: 8,
+                    status: 'CONFIRMED',
+                    paymentMethod: 'PROMPTPAY',
+                    totalAmount: 2500,
+                    createdAt: new Date().toISOString()
+                },
+                { 
+                    id: 2, 
+                    bookingId: 'BK20240102', 
+                    room: { name: 'Standard Room 1', number: 'S101', type: 'STANDARD', price: 800 },
+                    customerName: 'Jane Smith',
+                    customerEmail: 'jane@example.com',
+                    customerPhone: '0887654321',
+                    date: '2024-01-16',
+                    timeSlot: '14:00-16:00',
+                    numberOfPeople: 4,
+                    status: 'PENDING',
+                    paymentMethod: 'CASH',
+                    totalAmount: 800,
+                    createdAt: new Date().toISOString()
+                }
+            ]);
+            const [rooms, setRooms] = useState([
+                { id: 1, name: 'Premium Suite A', number: 'A101', type: 'PREMIUM', capacity: 8, price: 1500, status: 'AVAILABLE' },
+                { id: 2, name: 'VIP Room Gold', number: 'V201', type: 'VIP', capacity: 12, price: 2500, status: 'AVAILABLE' },
+                { id: 3, name: 'Standard Room 1', number: 'S101', type: 'STANDARD', capacity: 6, price: 800, status: 'AVAILABLE' },
+                { id: 4, name: 'Deluxe Suite', number: 'D301', type: 'DELUXE', capacity: 10, price: 1800, status: 'OCCUPIED' },
+                { id: 5, name: 'VIP Room Platinum', number: 'V202', type: 'VIP', capacity: 15, price: 3000, status: 'AVAILABLE' },
+                { id: 6, name: 'Standard Room 2', number: 'S102', type: 'STANDARD', capacity: 4, price: 600, status: 'AVAILABLE' }
+            ]);
+            const [promotions, setPromotions] = useState([
+                { id: 1, promotionId: 'SING2024', description: 'New Year Special - 20% off VIP rooms', discountType: 'PERCENTAGE', discountValue: 20, validFrom: '2024-01-01', validUntil: '2024-12-31', isActive: true },
+                { id: 2, promotionId: 'HAPPY30', description: 'Happy Hour - 30% off 2PM-5PM', discountType: 'PERCENTAGE', discountValue: 30, validFrom: '2024-01-01', validUntil: '2024-12-31', isActive: true },
+                { id: 3, promotionId: 'GROUP15', description: 'Group Booking - 15% off for 10+ people', discountType: 'PERCENTAGE', discountValue: 15, validFrom: '2024-01-01', validUntil: '2024-12-31', isActive: false }
+            ]);
+            const [showToast, setShowToast] = useState(null);
+            const [adminSection, setAdminSection] = useState('dashboard');
+
+            const showNotification = (message, type = 'success') => {
+                setShowToast({ message, type });
+                setTimeout(() => setShowToast(null), 3000);
+            };
+
+            // Navigation Component
+            const Navigation = () => (
+                <nav className="navbar">
+                    <div className="navbar-container">
+                        <div className="logo" onClick={() => setCurrentPage('home')}>
+                            🎤 KaraokeHub
+                        </div>
+                        <div className="nav-links">
+                            <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }}>Home</a>
+                            <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setCurrentPage('rooms'); }}>Rooms</a>
+                            <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setCurrentPage('promotions'); }}>Promotions</a>
+                            {user ? (
+                                <>
+                                    {user.role === 'CUSTOMER' && (
+                                        <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setCurrentPage('dashboard'); }}>My Bookings</a>
+                                    )}
+                                    {user.role === 'ADMIN' && (
+                                        <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setCurrentPage('admin'); }}>Admin Panel</a>
+                                    )}
+                                    <button className="btn btn-secondary" onClick={() => { setUser(null); setCurrentPage('home'); showNotification('Logged out successfully'); }}>
+                                        Logout ({user.name})
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button className="btn btn-secondary" onClick={() => setCurrentPage('login')}>Login</button>
+                                    <button className="btn btn-primary" onClick={() => setCurrentPage('register')}>Register</button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+            );
+
+            // Admin Dashboard Component
+            const AdminDashboard = () => {
+                const chartRef = useRef(null);
+                const chartInstance = useRef(null);
+
+                useEffect(() => {
+                    if (chartRef.current && adminSection === 'dashboard') {
+                        const ctx = chartRef.current.getContext('2d');
+                        
+                        if (chartInstance.current) {
+                            chartInstance.current.destroy();
+                        }
+
+                        chartInstance.current = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'Revenue (THB)',
+                                    data: [45000, 52000, 48000, 61000, 58000, 72000],
+                                    borderColor: '#8B5CF6',
+                                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                    tension: 0.4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    return () => {
+                        if (chartInstance.current) {
+                            chartInstance.current.destroy();
+                        }
+                    };
+                }, [adminSection]);
+
+                return (
+                    <div className="admin-layout">
+                        <aside className="admin-sidebar">
+                            <div className={`sidebar-item ${adminSection === 'dashboard' ? 'active' : ''}`} onClick={() => setAdminSection('dashboard')}>
+                                <span className="sidebar-icon">📊</span>
+                                <span>Dashboard</span>
+                            </div>
+                            <div className={`sidebar-item ${adminSection === 'bookings' ? 'active' : ''}`} onClick={() => setAdminSection('bookings')}>
+                                <span className="sidebar-icon">📅</span>
+                                <span>All Bookings</span>
+                            </div>
+                            <div className={`sidebar-item ${adminSection === 'rooms' ? 'active' : ''}`} onClick={() => setAdminSection('rooms')}>
+                                <span className="sidebar-icon">🚪</span>
+                                <span>Room Management</span>
+                            </div>
+                            <div className={`sidebar-item ${adminSection === 'promotions' ? 'active' : ''}`} onClick={() => setAdminSection('promotions')}>
+                                <span className="sidebar-icon">🎁</span>
+                                <span>Promotions</span>
+                            </div>
+                            <div className={`sidebar-item ${adminSection === 'customers' ? 'active' : ''}`} onClick={() => setAdminSection('customers')}>
+                                <span className="sidebar-icon">👥</span>
+                                <span>Customers</span>
+                            </div>
+                            <div className={`sidebar-item ${adminSection === 'reports' ? 'active' : ''}`} onClick={() => setAdminSection('reports')}>
+                                <span className="sidebar-icon">📈</span>
+                                <span>Reports</span>
+                            </div>
+                        </aside>
+
+                        <div className="admin-content">
+                            {adminSection === 'dashboard' && (
+                                <>
+                                    <h1 style={{ color: 'white', marginBottom: '2rem' }}>Admin Dashboard</h1>
+                                    
+                                    <div className="stats-grid">
+                                        <div className="stat-card">
+                                            <div className="stat-icon">📅</div>
+                                            <div className="stat-value">156</div>
+                                            <div className="stat-label">Total Bookings</div>
+                                            <div className="stat-change positive">+12.5%</div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-icon">💰</div>
+                                            <div className="stat-value">฿286,000</div>
+                                            <div className="stat-label">Total Revenue</div>
+                                            <div className="stat-change positive">+23.1%</div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-icon">👥</div>
+                                            <div className="stat-value">89</div>
+                                            <div className="stat-label">Active Customers</div>
+                                            <div className="stat-change positive">+18.7%</div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-icon">🚪</div>
+                                            <div className="stat-value">6/6</div>
+                                            <div className="stat-label">Available Rooms</div>
+                                            <div className="stat-change negative">-2</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="quick-actions">
+                                        <div className="quick-action" onClick={() => setAdminSection('bookings')}>
+                                            <div className="quick-action-icon">➕</div>
+                                            <div>New Booking</div>
+                                        </div>
+                                        <div className="quick-action" onClick={() => setAdminSection('rooms')}>
+                                            <div className="quick-action-icon">🚪</div>
+                                            <div>Manage Rooms</div>
+                                        </div>
+                                        <div className="quick-action" onClick={() => setAdminSection('promotions')}>
+                                            <div className="quick-action-icon">🎁</div>
+                                            <div>Create Promotion</div>
+                                        </div>
+                                        <div className="quick-action" onClick={() => setAdminSection('reports')}>
+                                            <div className="quick-action-icon">📊</div>
+                                            <div>View Reports</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="chart-container">
+                                        <div className="chart-header">
+                                            <div className="chart-title">Revenue Trend</div>
+                                        </div>
+                                        <canvas ref={chartRef} style={{ width: '100%', height: '300px' }}></canvas>
+                                    </div>
+
+                                    <AdminBookingsTable bookings={bookings.slice(0, 5)} title="Recent Bookings" />
+                                </>
+                            )}
+
+                            {adminSection === 'bookings' && (
+                                <>
+                                    <h1 style={{ color: 'white', marginBottom: '2rem' }}>All Bookings Management</h1>
+                                    <AdminBookingsTable 
+                                        bookings={bookings} 
+                                        title="All Bookings"
+                                        showFilters={true}
+                                        onStatusChange={(bookingId, newStatus) => {
+                                            setBookings(bookings.map(b => 
+                                                b.bookingId === bookingId ? {...b, status: newStatus} : b
+                                            ));
+                                            showNotification(`Booking ${bookingId} status updated to ${newStatus}`);
+                                        }}
+                                        onDelete={(bookingId) => {
+                                            setBookings(bookings.filter(b => b.bookingId !== bookingId));
+                                            showNotification('Booking deleted successfully', 'success');
+                                        }}
+                                    />
+                                </>
+                            )}
+
+                            {adminSection === 'rooms' && (
+                                <>
+                                    <h1 style={{ color: 'white', marginBottom: '2rem' }}>Room Management</h1>
+                                    <button className="btn btn-primary" style={{ marginBottom: '2rem' }}>
+                                        ➕ Add New Room
+                                    </button>
+                                    <AdminRoomsTable 
+                                        rooms={rooms}
+                                        onStatusChange={(roomId, newStatus) => {
+                                            setRooms(rooms.map(r => 
+                                                r.id === roomId ? {...r, status: newStatus} : r
+                                            ));
+                                            showNotification(`Room status updated to ${newStatus}`);
+                                        }}
+                                        onEdit={(room) => {
+                                            showNotification('Edit room functionality would open here');
+                                        }}
+                                        onDelete={(roomId) => {
+                                            setRooms(rooms.filter(r => r.id !== roomId));
+                                            showNotification('Room deleted successfully', 'success');
+                                        }}
+                                    />
+                                </>
+                            )}
+
+                            {adminSection === 'promotions' && (
+                                <>
+                                    <h1 style={{ color: 'white', marginBottom: '2rem' }}>Promotion Management</h1>
+                                    <button className="btn btn-primary" style={{ marginBottom: '2rem' }}>
+                                        ➕ Create New Promotion
+                                    </button>
+                                    <AdminPromotionsManager 
+                                        promotions={promotions}
+                                        onToggleStatus={(promoId) => {
+                                            setPromotions(promotions.map(p => 
+                                                p.id === promoId ? {...p, isActive: !p.isActive} : p
+                                            ));
+                                            showNotification('Promotion status updated');
+                                        }}
+                                        onEdit={(promo) => {
+                                            showNotification('Edit promotion functionality would open here');
+                                        }}
+                                        onDelete={(promoId) => {
+                                            setPromotions(promotions.filter(p => p.id !== promoId));
+                                            showNotification('Promotion deleted successfully', 'success');
+                                        }}
+                                    />
+                                </>
+                            )}
+
+                            {adminSection === 'customers' && (
+                                <>
+                                    <h1 style={{ color: 'white', marginBottom: '2rem' }}>Customer Management</h1>
+                                    <AdminCustomersTable />
+                                </>
+                            )}
+
+                            {adminSection === 'reports' && (
+                                <>
+                                    <h1 style={{ color: 'white', marginBottom: '2rem' }}>Reports & Analytics</h1>
+                                    <AdminReports />
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            // Admin Bookings Table Component
+            const AdminBookingsTable = ({ bookings, title, showFilters, onStatusChange, onDelete }) => {
+                const [searchTerm, setSearchTerm] = useState('');
+                const [filterStatus, setFilterStatus] = useState('ALL');
+
+                const filteredBookings = bookings.filter(booking => {
+                    const matchesSearch = booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                         booking.bookingId.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesStatus = filterStatus === 'ALL' || booking.status === filterStatus;
+                    return matchesSearch && matchesStatus;
+                });
+
+                return (
+                    <div className="admin-table-container">
+                        <div className="table-header">
+                            <div className="table-title">{title}</div>
+                            {showFilters && (
+                                <div className="table-actions">
+                                    <input 
+                                        type="text" 
+                                        className="search-box"
+                                        placeholder="Search bookings..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    <select 
+                                        className="search-box"
+                                        value={filterStatus}
+                                        onChange={(e) => setFilterStatus(e.target.value)}
+                                    >
+                                        <option value="ALL">All Status</option>
+                                        <option value="PENDING">Pending</option>
+                                        <option value="CONFIRMED">Confirmed</option>
+                                        <option value="CANCELLED">Cancelled</option>
+                                        <option value="CLOSED">Closed</option>
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Customer</th>
+                                    <th>Room</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredBookings.map(booking => (
+                                    <tr key={booking.id}>
+                                        <td>{booking.bookingId}</td>
+                                        <td>
+                                            <div>{booking.customerName}</div>
+                                            <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>{booking.customerPhone}</div>
+                                        </td>
+                                        <td>{booking.room.name}</td>
+                                        <td>
+                                            <div>{booking.date}</div>
+                                            <div style={{ fontSize: '0.875rem', color: '#6B7280' }}>{booking.timeSlot}</div>
+                                        </td>
+                                        <td>
+                                            <span className={`room-status status-${booking.status.toLowerCase()}`}>
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                        <td>{booking.paymentMethod}</td>
+                                        <td>฿{booking.totalAmount}</td>
+                                        <td>
+                                            <div className="table-actions-cell">
+                                                <button className="action-btn view" title="View Details">👁️</button>
+                                                {onStatusChange && (
+                                                    <select 
+                                                        onChange={(e) => onStatusChange(booking.bookingId, e.target.value)}
+                                                        value={booking.status}
+                                                        style={{ padding: '0.25rem', borderRadius: '5px', border: '1px solid #E5E7EB' }}
+                                                    >
+                                                        <option value="PENDING">Pending</option>
+                                                        <option value="CONFIRMED">Confirmed</option>
+                                                        <option value="CANCELLED">Cancelled</option>
+                                                        <option value="CLOSED">Closed</option>
+                                                    </select>
+                                                )}
+                                                {onDelete && (
+                                                    <button 
+                                                        className="action-btn delete" 
+                                                        title="Delete"
+                                                        onClick={() => onDelete(booking.bookingId)}
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            };
+
+            // Admin Rooms Table Component
+            const AdminRoomsTable = ({ rooms, onStatusChange, onEdit, onDelete }) => {
+                return (
+                    <div className="admin-table-container">
+                        <div className="table-header">
+                            <div className="table-title">Room Inventory</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Room Number</th>
+                                    <th>Room Name</th>
+                                    <th>Type</th>
+                                    <th>Capacity</th>
+                                    <th>Price/Hour</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rooms.map(room => (
+                                    <tr key={room.id}>
+                                        <td>{room.number}</td>
+                                        <td>{room.name}</td>
+                                        <td>
+                                            <span className="room-type" style={{ background: 'var(--gradient)', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>
+                                                {room.type}
+                                            </span>
+                                        </td>
+                                        <td>{room.capacity} people</td>
+                                        <td>฿{room.price}</td>
+                                        <td>
+                                            <select 
+                                                value={room.status}
+                                                onChange={(e) => onStatusChange(room.id, e.target.value)}
+                                                className={`room-status status-${room.status.toLowerCase()}`}
+                                                style={{ border: 'none', cursor: 'pointer' }}
+                                            >
+                                                <option value="AVAILABLE">Available</option>
+                                                <option value="OCCUPIED">Occupied</option>
+                                                <option value="MAINTENANCE">Maintenance</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div className="table-actions-cell">
+                                                <button className="action-btn edit" onClick={() => onEdit(room)}>✏️</button>
+                                                <button className="action-btn delete" onClick={() => onDelete(room.id)}>🗑️</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            };
+
+            // Admin Promotions Manager Component
+            const AdminPromotionsManager = ({ promotions, onToggleStatus, onEdit, onDelete }) => {
+                return (
+                    <div>
+                        {promotions.map(promo => (
+                            <div key={promo.id} className="promotion-card">
+                                <div className="promotion-header">
+                                    <div>
+                                        <div className="promotion-title">{promo.description}</div>
+                                        <div className="promotion-code-display">{promo.promotionId}</div>
+                                    </div>
+                                    <div>
+                                        <button 
+                                            className={`btn ${promo.isActive ? 'btn-success' : 'btn-secondary'}`}
+                                            onClick={() => onToggleStatus(promo.id)}
+                                        >
+                                            {promo.isActive ? 'Active' : 'Inactive'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="promotion-details">
+                                    <span>💰 {promo.discountValue}% OFF</span>
+                                    <span>📅 Valid: {promo.validFrom} to {promo.validUntil}</span>
+                                </div>
+                                <div className="promotion-actions">
+                                    <button className="btn btn-secondary" onClick={() => onEdit(promo)}>Edit</button>
+                                    <button className="btn btn-danger" onClick={() => onDelete(promo.id)}>Delete</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            };
+
+            // Admin Customers Table Component
+            const AdminCustomersTable = () => {
+                const customers = [
+                    { id: 1, name: 'John Doe', email: 'john@example.com', phone: '0812345678', totalBookings: 12, totalSpent: 28500, status: 'ACTIVE' },
+                    { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '0887654321', totalBookings: 8, totalSpent: 15200, status: 'ACTIVE' },
+                    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '0898765432', totalBookings: 3, totalSpent: 7500, status: 'INACTIVE' }
+                ];
+
+                return (
+                    <div className="admin-table-container">
+                        <div className="table-header">
+                            <div className="table-title">Customer Database</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Total Bookings</th>
+                                    <th>Total Spent</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {customers.map(customer => (
+                                    <tr key={customer.id}>
+                                        <td>{customer.name}</td>
+                                        <td>{customer.email}</td>
+                                        <td>{customer.phone}</td>
+                                        <td>{customer.totalBookings}</td>
+                                        <td>฿{customer.totalSpent.toLocaleString()}</td>
+                                        <td>
+                                            <span className={`room-status status-${customer.status === 'ACTIVE' ? 'available' : 'occupied'}`}>
+                                                {customer.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="table-actions-cell">
+                                                <button className="action-btn view">👁️</button>
+                                                <button className="action-btn edit">📧</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            };
+
+            // Admin Reports Component
+            const AdminReports = () => {
+                return (
+                    <div>
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-icon">📊</div>
+                                <div className="stat-value">92%</div>
+                                <div className="stat-label">Occupancy Rate</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon">⭐</div>
+                                <div className="stat-value">4.8/5</div>
+                                <div className="stat-label">Average Rating</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon">📈</div>
+                                <div className="stat-value">฿72,000</div>
+                                <div className="stat-label">This Month Revenue</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon">🎯</div>
+                                <div className="stat-value">156</div>
+                                <div className="stat-label">Monthly Bookings</div>
+                            </div>
+                        </div>
+
+                        <div className="admin-table-container" style={{ marginTop: '2rem' }}>
+                            <div className="table-header">
+                                <div className="table-title">Performance Metrics</div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>This Month</th>
+                                        <th>Last Month</th>
+                                        <th>Change</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total Revenue</td>
+                                        <td>฿72,000</td>
+                                        <td>฿58,000</td>
+                                        <td><span className="stat-change positive" style={{ position: 'relative' }}>+24.1%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Bookings</td>
+                                        <td>156</td>
+                                        <td>132</td>
+                                        <td><span className="stat-change positive" style={{ position: 'relative' }}>+18.2%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Average Booking Value</td>
+                                        <td>฿461</td>
+                                        <td>฿439</td>
+                                        <td><span className="stat-change positive" style={{ position: 'relative' }}>+5.0%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Customer Retention</td>
+                                        <td>68%</td>
+                                        <td>65%</td>
+                                        <td><span className="stat-change positive" style={{ position: 'relative' }}>+4.6%</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="btn-group" style={{ marginTop: '2rem' }}>
+                            <button className="btn btn-primary">📊 Export Report</button>
+                            <button className="btn btn-secondary">📧 Email Report</button>
+                            <button className="btn btn-secondary">🖨️ Print Report</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Home Page Component
+            const HomePage = () => (
+                <div>
+                    <div className="hero">
+                        <h1>🎉 Book Your Perfect Karaoke Experience</h1>
+                        <p>Choose from our premium rooms and sing your heart out!</p>
+                        <button className="btn btn-primary" onClick={() => setCurrentPage('rooms')}>
+                            🎤 Book Now
+                        </button>
+                    </div>
+                    <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+                        <div className="promotion-card" style={{ background: 'var(--gradient)', color: 'white', borderLeft: 'none' }}>
+                            <h2>🎊 Special Promotion This Month!</h2>
+                            <p>Get 20% off on all VIP rooms with code:</p>
+                            <div style={{ fontSize: '1.5rem', fontFamily: 'monospace', marginTop: '1rem', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '10px', display: 'inline-block' }}>
+                                SING2024
+                            </div>
+                        </div>
+                    </div>
+                    <div className="room-grid">
+                        {rooms.slice(0, 3).map(room => (
+                            <RoomCard key={room.id} room={room} />
+                        ))}
+                    </div>
+                </div>
+            );
+
+            // Room Card Component
+            const RoomCard = ({ room }) => (
+                <div className="room-card" onClick={() => { setSelectedRoom(room); setShowBookingModal(true); }}>
+                    <div className="room-header">
+                        <div className="room-type">{room.type}</div>
+                        <div className="room-name">{room.name}</div>
+                        <div className="room-number">Room {room.number}</div>
+                    </div>
+                    <div className="room-body">
+                        <div className="room-info">
+                            <div className="info-item">
+                                👥 {room.capacity} people
+                            </div>
+                            <div className={`room-status ${room.status === 'AVAILABLE' ? 'status-available' : 'status-occupied'}`}>
+                                {room.status}
+                            </div>
+                        </div>
+                        <div className="room-price">฿{room.price}/hour</div>
+                        <button className="btn btn-primary" style={{ width: '100%' }} disabled={room.status !== 'AVAILABLE'}>
+                            {room.status === 'AVAILABLE' ? 'Book Now' : 'Not Available'}
+                        </button>
+                    </div>
+                </div>
+            );
+
+            // Booking Modal Component
+            const BookingModal = () => {
+                const [bookingData, setBookingData] = useState({
+                    date: '',
+                    timeSlot: '',
+                    customerName: user?.name || '',
+                    customerEmail: user?.email || '',
+                    customerPhone: '',
+                    numberOfPeople: 1,
+                    paymentMethod: 'CASH',
+                    promotionCode: ''
+                });
+
+                const timeSlots = [
+                    '10:00-12:00', '12:00-14:00', '14:00-16:00', 
+                    '16:00-18:00', '18:00-20:00', '20:00-22:00', '22:00-00:00'
+                ];
+
+                const handleBooking = () => {
+                    const newBooking = {
+                        id: Date.now(),
+                        bookingId: `BK${Date.now()}`,
+                        ...bookingData,
+                        room: selectedRoom,
+                        status: 'PENDING',
+                        totalAmount: selectedRoom?.price || 0,
+                        createdAt: new Date().toISOString()
+                    };
+                    setBookings([...bookings, newBooking]);
+                    setShowBookingModal(false);
+                    showNotification('Booking created successfully! Check your email for confirmation.');
+                    setSelectedRoom(null);
+                };
+
+                return showBookingModal ? (
+                    <div className="modal-overlay" onClick={() => setShowBookingModal(false)}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>Book {selectedRoom?.name}</h2>
+                                <p>Room {selectedRoom?.number} • {selectedRoom?.type}</p>
+                                <button className="modal-close" onClick={() => setShowBookingModal(false)}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label className="form-label">Date</label>
+                                    <input 
+                                        type="date" 
+                                        className="form-input"
+                                        value={bookingData.date}
+                                        onChange={(e) => setBookingData({...bookingData, date: e.target.value})}
+                                        min={new Date().toISOString().split('T')[0]}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Time Slot</label>
+                                    <div className="time-slots">
+                                        {timeSlots.map(slot => (
+                                            <div 
+                                                key={slot}
+                                                className={`time-slot ${bookingData.timeSlot === slot ? 'selected' : ''}`}
+                                                onClick={() => setBookingData({...bookingData, timeSlot: slot})}
+                                            >
+                                                {slot}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Your Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-input"
+                                        value={bookingData.customerName}
+                                        onChange={(e) => setBookingData({...bookingData, customerName: e.target.value})}
+                                        placeholder="Enter your name"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Email</label>
+                                    <input 
+                                        type="email" 
+                                        className="form-input"
+                                        value={bookingData.customerEmail}
+                                        onChange={(e) => setBookingData({...bookingData, customerEmail: e.target.value})}
+                                        placeholder="your@email.com"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Phone Number</label>
+                                    <input 
+                                        type="tel" 
+                                        className="form-input"
+                                        value={bookingData.customerPhone}
+                                        onChange={(e) => setBookingData({...bookingData, customerPhone: e.target.value})}
+                                        placeholder="0812345678"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Number of People</label>
+                                    <input 
+                                        type="number" 
+                                        className="form-input"
+                                        value={bookingData.numberOfPeople}
+                                        onChange={(e) => setBookingData({...bookingData, numberOfPeople: parseInt(e.target.value)})}
+                                        min="1"
+                                        max={selectedRoom?.capacity || 20}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Payment Method</label>
+                                    <select 
+                                        className="form-select"
+                                        value={bookingData.paymentMethod}
+                                        onChange={(e) => setBookingData({...bookingData, paymentMethod: e.target.value})}
+                                    >
+                                        <option value="CASH">Cash</option>
+                                        <option value="PROMPTPAY">PromptPay</option>
+                                        <option value="MOBILE_BANKING">Mobile Banking</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Promotion Code (Optional)</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-input"
+                                        value={bookingData.promotionCode}
+                                        onChange={(e) => setBookingData({...bookingData, promotionCode: e.target.value})}
+                                        placeholder="Enter promotion code"
+                                    />
+                                </div>
+                                <div className="btn-group">
+                                    <button className="btn btn-secondary" onClick={() => setShowBookingModal(false)}>Cancel</button>
+                                    <button className="btn btn-primary" onClick={handleBooking}>Confirm Booking</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : null;
+            };
+
+            // Login Component
+            const LoginPage = () => {
+                const [credentials, setCredentials] = useState({ email: '', password: '' });
+
+                const handleLogin = () => {
+                    // Simulate login - check for admin
+                    if (credentials.email === 'admin@karaokehub.com') {
+                        setUser({ id: 1, name: 'Admin User', email: credentials.email, role: 'ADMIN' });
+                        setCurrentPage('admin');
+                        showNotification('Welcome to Admin Panel!');
+                    } else {
+                        setUser({ id: 2, name: 'John Doe', email: credentials.email, role: 'CUSTOMER' });
+                        setCurrentPage('dashboard');
+                        showNotification('Login successful!');
+                    }
+                };
+
+                return (
+                    <div className="auth-container">
+                        <div className="auth-card">
+                            <div className="auth-header">
+                                <h2>Welcome Back!</h2>
+                                <p>Login to your account</p>
+                            </div>
+                            <div className="auth-body">
+                                <div className="form-group">
+                                    <label className="form-label">Email</label>
+                                    <input 
+                                        type="email" 
+                                        className="form-input"
+                                        value={credentials.email}
+                                        onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                                        placeholder="your@email.com"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Password</label>
+                                    <input 
+                                        type="password" 
+                                        className="form-input"
+                                        value={credentials.password}
+                                        onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                                        placeholder="Enter your password"
+                                    />
+                                </div>
+                                <div style={{ marginBottom: '1rem', padding: '1rem', background: '#F3F4F6', borderRadius: '10px' }}>
+                                    <p style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+                                        <strong>Demo Accounts:</strong><br/>
+                                        Admin: admin@karaokehub.com<br/>
+                                        Customer: user@example.com<br/>
+                                        Password: (any)
+                                    </p>
+                                </div>
+                                <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleLogin}>
+                                    Login
+                                </button>
+                            </div>
+                            <div className="auth-footer">
+                                Don't have an account? <a href="#" className="auth-link" onClick={(e) => { e.preventDefault(); setCurrentPage('register'); }}>Register</a>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Register Component
+            const RegisterPage = () => {
+                const [formData, setFormData] = useState({
+                    name: '',
+                    email: '',
+                    password: '',
+                    confirmPassword: '',
+                    phoneNumber: ''
+                });
+
+                const handleRegister = () => {
+                    setUser({ id: Date.now(), ...formData, role: 'CUSTOMER' });
+                    setCurrentPage('dashboard');
+                    showNotification('Registration successful! Welcome to KaraokeHub!');
+                };
+
+                return (
+                    <div className="auth-container">
+                        <div className="auth-card">
+                            <div className="auth-header">
+                                <h2>Create Account</h2>
+                                <p>Join KaraokeHub today!</p>
+                            </div>
+                            <div className="auth-body">
+                                <div className="form-group">
+                                    <label className="form-label">Full Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-input"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Email</label>
+                                    <input 
+                                        type="email" 
+                                        className="form-input"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                        placeholder="your@email.com"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Phone Number</label>
+                                    <input 
+                                        type="tel" 
+                                        className="form-input"
+                                        value={formData.phoneNumber}
+                                        onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                                        placeholder="0812345678"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Password</label>
+                                    <input 
+                                        type="password" 
+                                        className="form-input"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Confirm Password</label>
+                                    <input 
+                                        type="password" 
+                                        className="form-input"
+                                        value={formData.confirmPassword}
+                                        onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                                        placeholder="Confirm password"
+                                    />
+                                </div>
+                                <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleRegister}>
+                                    Register
+                                </button>
+                            </div>
+                            <div className="auth-footer">
+                                Already have an account? <a href="#" className="auth-link" onClick={(e) => { e.preventDefault(); setCurrentPage('login'); }}>Login</a>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Rooms Page
+            const RoomsPage = () => (
+                <div style={{ padding: '2rem' }}>
+                    <h1 style={{ textAlign: 'center', color: 'white', marginBottom: '2rem' }}>All Available Rooms</h1>
+                    <div className="room-grid">
+                        {rooms.map(room => (
+                            <RoomCard key={room.id} room={room} />
+                        ))}
+                    </div>
+                </div>
+            );
+
+            // Promotions Page
+            const PromotionsPage = () => (
+                <div style={{ padding: '2rem', maxWidth: '1280px', margin: '0 auto' }}>
+                    <h1 style={{ textAlign: 'center', color: 'white', marginBottom: '2rem' }}>Active Promotions</h1>
+                    {promotions.filter(p => p.isActive).map(promo => (
+                        <div key={promo.id} className="promotion-card" style={{ background: 'var(--gradient)', color: 'white', borderLeft: 'none', marginBottom: '1.5rem' }}>
+                            <h2>{promo.description}</h2>
+                            <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem' }}>
+                                <div className="promotion-code-display" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                                    {promo.promotionId}
+                                </div>
+                                <span>💰 {promo.discountValue}% OFF</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            // Customer Dashboard Component
+            const DashboardPage = () => {
+                const userBookings = bookings.filter(b => b.customerEmail === user?.email);
+                
+                return (
+                    <div className="dashboard">
+                        <div className="dashboard-header">
+                            <h1>Welcome back, {user?.name}!</h1>
+                            <p>Manage your bookings and account</p>
+                        </div>
+                        <div className="dashboard-stats">
+                            <div className="stat-card">
+                                <div className="stat-value">{userBookings.length}</div>
+                                <div className="stat-label">Total Bookings</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{userBookings.filter(b => b.status === 'PENDING').length}</div>
+                                <div className="stat-label">Pending</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{userBookings.filter(b => b.status === 'CONFIRMED').length}</div>
+                                <div className="stat-label">Confirmed</div>
+                            </div>
+                        </div>
+                        <div className="bookings-table">
+                            <div className="table-header">
+                                <h2 style={{ color: 'white' }}>My Bookings</h2>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Booking ID</th>
+                                        <th>Room</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {userBookings.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
+                                                No bookings yet
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        userBookings.map(booking => (
+                                            <tr key={booking.id}>
+                                                <td>{booking.bookingId}</td>
+                                                <td>{booking.room.name}</td>
+                                                <td>{booking.date}</td>
+                                                <td>{booking.timeSlot}</td>
+                                                <td>
+                                                    <span className={`room-status status-${booking.status.toLowerCase()}`}>
+                                                        {booking.status}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="table-actions-cell">
+                                                        <button className="action-btn edit">✏️</button>
+                                                        <button className="action-btn delete" onClick={() => {
+                                                            setBookings(bookings.filter(b => b.id !== booking.id));
+                                                            showNotification('Booking cancelled successfully');
+                                                        }}>🗑️</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Toast Notification
+            const Toast = () => showToast ? (
+                <div className={`toast ${showToast.type}`}>
+                    {showToast.type === 'success' && '✅'}
+                    {showToast.type === 'error' && '❌'}
+                    {showToast.type === 'warning' && '⚠️'}
+                    <span>{showToast.message}</span>
+                </div>
+            ) : null;
+
+            return (
+                <div className="app">
+                    <Navigation />
+                    {currentPage === 'home' && <HomePage />}
+                    {currentPage === 'rooms' && <RoomsPage />}
+                    {currentPage === 'promotions' && <PromotionsPage />}
+                    {currentPage === 'login' && <LoginPage />}
+                    {currentPage === 'register' && <RegisterPage />}
+                    {currentPage === 'dashboard' && user?.role === 'CUSTOMER' && <DashboardPage />}
+                    {currentPage === 'admin' && user?.role === 'ADMIN' && <AdminDashboard />}
+                    <BookingModal />
+                    <Toast />
+                </div>
+            );
+        };
+
+        // Render the App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
